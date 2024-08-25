@@ -82,65 +82,7 @@
     </tr>
   </table>
 <a href="https://drive.google.com/drive/folders/1WLD80Spr9PWbh8HpcZbskAeU68-h9cJg">drive S3CT</a>
-<pre>
-#include<stdio.h>
-
-// Function to multiply two matrices
-void multiplyMatrices(int mat1[10][10], int mat2[10][10], int result[10][10], int r1, int c1, int r2, int c2) {
-    int i, j, k;
-    if (c1 != r2) {
-        printf("Matrices cannot be multiplied");
-        return;
-    }
-    for (i = 0; i < r1; i++) {
-        for (j = 0; j < c2; j++) {
-            result[i][j] = 0;
-            for (k = 0; k < c1; k++) {
-                result[i][j] += mat1[i][k] * mat2[k][j];
-            }
-        }
-    }
-}
-
-// Function to print matrix
-void printMatrix(int mat[10][10], int row, int col) {
-    int i, j;
-    for (i = 0; i < row; i++) {
-        for (j = 0; j < col; j++) {
-            printf("%d ", mat[i][j]);
-        }
-        printf("\n");
-    }
-}
-
-int main() {
-    int mat1[10][10], mat2[10][10], result[10][10], r1, c1, r2, c2, i, j;
-    printf("Enter rows and columns for first matrix: ");
-    scanf("%d %d", &r1, &c1);
-    printf("Enter elements of first matrix:\n");
-    for (i = 0; i < r1; i++) {
-        for (j = 0; j < c1; j++) {
-            scanf("%d", &mat1[i][j]);
-        }
-    }
-    printf("Enter rows and columns for second matrix: ");
-    scanf("%d %d", &r2, &c2);
-    printf("Enter elements of second matrix:\n");
-    for (i = 0; i < r2; i++) {
-        for (j = 0; j < c2; j++) {
-            scanf("%d", &mat2[i][j]);
-        }
-    }
-    multiplyMatrices(mat1, mat2, result, r1, c1, r2, c2);
-    printf("First Matrix:\n");
-    printMatrix(mat1, r1, c1);
-    printf("Second Matrix:\n");
-    printMatrix(mat2, r2, c2);
-    printf("Resultant Matrix:\n");
-    printMatrix(result, r1, c2);
-    return 0;
-}
-</pre>
+<a href="https://drive.google.com/drive/folders/1UGiOYuLZxIzz8B8HLW81AKed2Zsmmj37?usp=drive_link">DBMS</a>
   <script src="script.js"></script>
 </body>
 </html>
