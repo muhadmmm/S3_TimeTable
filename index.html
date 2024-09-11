@@ -1,4 +1,4 @@
-a<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -84,59 +84,8 @@ a<!DOCTYPE html>
 <a href="https://drive.google.com/drive/folders/1WLD80Spr9PWbh8HpcZbskAeU68-h9cJg">drive S3CT</a>
 <a href="https://drive.google.com/drive/folders/1UGiOYuLZxIzz8B8HLW81AKed2Zsmmj37?usp=drive_link">DBMS</a><br>
 <a href="snakegame.txt">snakegame</a>
-<pre>
-#include <stdio.h>
-void swap(int*, int*);
-int partition(int arr[], int low, int high);
-void quicksort(int arr[], int low, int high) {
-  if (low < high) {
-    int pivot = partition(arr, low, high);
-    quicksort(arr, low, pivot - 1);
-    quicksort(arr, pivot + 1, high);
-  }
-}
-
-int partition(int arr[], int low, int high) {
-  int pivot = arr[high];
-  int i = (low - 1);
-
-  for (int j = low; j < high; j++) {
-    if (arr[j] < pivot) {
-      i++;
-      swap(&arr[i], &arr[j]);
-    }
-  }
-
-  swap(&arr[i + 1], &arr[high]);
-  return (i + 1);
-}
-
-void swap(int* a, int* b) {
-  int temp = *a;
-  *a = *b;
-  *b = temp;
-}
-
-int main() {
-  int arr[20] ;
-  int n,i;
-  printf("enter the array size :");
-  scanf("%d",&n);
-  printf("enter the elements :");
-  for (i=0;i < n;i++){
-  	scanf("%d",&arr[i]);
-  	}
-  quicksort(arr, 0, n - 1);
-
-  printf("Sorted array:  ");
-  for (i = 0; i < n; i++) {
-    printf(" %d ", arr[i]);
-  }
-  printf("\n");
-
-  return 0;
-}
-</pre>
+<h5>gemini API<h5>
+<span id=API>AIzaSyDeMVpwIwkGGBvcID8nfm2_DEf_6VSHhls</span>
   <script src="script.js"></script>
 </body>
 </html>
