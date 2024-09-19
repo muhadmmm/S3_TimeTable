@@ -1,0 +1,104 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// Structure to represent a task
+typedef struct {
+    char description[100];
+    time_t dueDate;
+    time_t completionDate;
+    int completed;
+} Task;
+
+// Function to add a task
+void addTask(Task tasks[], int* numTasks) {
+    printf("Enter task description: ");
+    scanf("%s", tasks[*numTasks].description);
+    printf("Enter due date (YYYY-MM-DD): ");
+    int year, month, day;
+    scanf("%d-%d-%d", &year, &month, &day);
+    struct tm dueDateTime = {0};
+    dueDateTime.tm_year = year - 1900;
+    dueDateTime.tm_mon = month - 1;
+    dueDateTime.tm_mday = day;
+    tasks[*numTasks].dueDate = mktime(&dueDateTime);
+    tasks[*numTasks].completionDate = 0;
+    tasks[*numTasks].completed = 0;
+    (*numTasks)++;
+}
+
+// Function to display tasks
+void displayTasks(Task tasks[], int numTasks) {
+    printf("To-Do List:\n");
+    // Sort tasks by due date
+    for (int i = 0; i < numTasks; i++) {
+        for (int j = i + 1; j < numTasks; j++) {
+            if (tasks[i].dueDate > tasks[j].dueDate) {
+                Task temp = tasks[i];
+                tasks[i] = tasks[j];
+                tasks[j] = temp;
+            }
+        }
+    }
+    for (int i = 0; i < numTasks; i++) {
+        char dueDateStr[20];
+        char completionDateStr[20];
+        strftime(dueDateStr, sizeof(dueDateStr), "%Y-%m-%d", localtime(&tasks[i].dueDate));
+        if (tasks[i].completionDate != 0) {
+            strftime(completionDateStr, sizeof(completionDateStr), "%Y-%m-%d", localtime(&tasks[i].completionDate));
+        } else {
+            strcpy(completionDateStr, "Not Completed");
+        }
+        printf("%d. %s - Due: %s, Completed: %s [%s]\n", i+1, tasks[i].description, dueDateStr, completionDateStr, tasks[i].completed ? "X" : " ");
+    }
+}
+
+// Function to complete a task
+void completeTask(Task tasks[], int numTasks) {
+    int taskNumber;
+    printf("Enter task number to complete: ");
+    scanf("%d", &taskNumber);
+    if (taskNumber >= 1 && taskNumber <= numTasks) {
+        tasks[taskNumber-1].completed = 1;
+        tasks[taskNumber-1].completionDate = time(NULL);
+    } else {
+        printf("Invalid task number\n");
+    }
+}
+
+int main() {
+    Task tasks[100];
+    int numTasks = 0;
+    while (1) {
+        printf("To-Do List Menu:\n");
+        printf("1. Add Task\n");
+        printf("2. Display Tasks\n");
+        printf("3. Complete Task\n");
+        printf("4. Exit\n");
+        printf("5. Clear\n");
+        printf("Enter choice: ");
+        int choice;
+        scanf("%d", &choice);
+        switch (choice) {
+            case 1:
+                addTask(tasks, &numTasks);
+                break;
+            case 2:
+                displayTasks(tasks, numTasks);
+                break;
+            case 3:
+                displayTasks(tasks, numTasks);
+                completeTask(tasks, numTasks);
+                break;
+            case 4:
+                return 0;
+            case 5:
+                printf("\033[H\033[2J");
+                break;
+            default:
+                printf("Invalid choice\n");
+        }
+    }
+    return 0;
+}
