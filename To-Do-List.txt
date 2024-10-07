@@ -1,8 +1,7 @@
-﻿#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
 
 // Structure to represent a task
 typedef struct {
@@ -12,30 +11,37 @@ typedef struct {
     int completed;
 } Task;
 
+// Forward declaration of saveTasksToFile
+void saveTasksToFile(Task* tasks, int numTasks);
 
 // Function to add a task
-void addTask(Task* tasks, int* numTasks, FILE* file) {
+void addTask(Task* tasks, int* numTasks) {
     printf("Enter task description: ");
-    scanf("%s", tasks[*numTasks].description);
+    getchar();  // To consume the newline left in the buffer
+    fgets(tasks[*numTasks].description, 100, stdin);
+    tasks[*numTasks].description[strcspn(tasks[*numTasks].description, "\n")] = 0; // Remove trailing newline
+
     printf("Enter due date (YYYY-MM-DD): ");
     int year, month, day;
     scanf("%d-%d-%d", &year, &month, &day);
+    
     struct tm dueDateTime = {0};
     dueDateTime.tm_year = year - 1900;
     dueDateTime.tm_mon = month - 1;
     dueDateTime.tm_mday = day;
+    
     tasks[*numTasks].dueDate = mktime(&dueDateTime);
     tasks[*numTasks].completionDate = 0;
     tasks[*numTasks].completed = 0;
-    fprintf(file, "%s;%d-%d-%d;0;0\n", tasks[*numTasks].description, year, month, day);
-    fflush(file);
+    
     (*numTasks)++;
+    saveTasksToFile(tasks, *numTasks);
 }
-
 
 // Function to display tasks
 void displayTasks(Task* tasks, int numTasks) {
     printf("To-Do List:\n");
+
     // Sort tasks by due date
     for (int i = 0; i < numTasks; i++) {
         for (int j = i + 1; j < numTasks; j++) {
@@ -46,74 +52,91 @@ void displayTasks(Task* tasks, int numTasks) {
             }
         }
     }
+
     for (int i = 0; i < numTasks; i++) {
         char dueDateStr[20];
         char completionDateStr[20];
         strftime(dueDateStr, sizeof(dueDateStr), "%Y-%m-%d", localtime(&tasks[i].dueDate));
+
         if (tasks[i].completionDate != 0) {
             strftime(completionDateStr, sizeof(completionDateStr), "%Y-%m-%d", localtime(&tasks[i].completionDate));
         } else {
             strcpy(completionDateStr, "Not Completed");
         }
-        printf("%d. %s - Due: %s, Completed: %s [%s]\n", i+1, tasks[i].description, dueDateStr, completionDateStr, tasks[i].completed ? "X" : " ");
+
+        printf("%d. %s - Due: %s, Completed: %s [%s]\n", i + 1, tasks[i].description, dueDateStr, completionDateStr, tasks[i].completed ? "X" : " ");
     }
 }
 
-
 // Function to complete a task
-void completeTask(Task* tasks, int numTasks, FILE* file) {
+void completeTask(Task* tasks, int numTasks) {
     int taskNumber;
     printf("Enter task number to complete: ");
     scanf("%d", &taskNumber);
+    
     if (taskNumber >= 1 && taskNumber <= numTasks) {
-        tasks[taskNumber-1].completed = 1;
-        tasks[taskNumber-1].completionDate = time(NULL);
-        // Update file
-        rewind(file);
-        for (int i = 0; i < numTasks; i++) {
-            fprintf(file, "%s;%d-%d-%d;%d;%ld\n", tasks[i].description, tasks[i].dueDate / 86400 + 1970, tasks[i].dueDate / 3600 % 24, tasks[i].dueDate / 60 % 60, tasks[i].completed, tasks[i].completionDate);
-        }
-        fflush(file);
+        tasks[taskNumber - 1].completed = 1;
+        tasks[taskNumber - 1].completionDate = time(NULL);
+        saveTasksToFile(tasks, numTasks);
     } else {
         printf("Invalid task number\n");
     }
 }
 
+// Function to save tasks to file
+void saveTasksToFile(Task* tasks, int numTasks) {
+    FILE* file = fopen("tasks.txt", "w");
+    if (file == NULL) {
+        printf("Error opening file\n");
+        return;
+    }
 
-// Function to load tasks from file
-void loadTasks(Task* tasks, int* numTasks, FILE* file) {
-    rewind(file);
+    for (int i = 0; i < numTasks; i++) {
+        struct tm *dueDateTime = localtime(&tasks[i].dueDate);
+        fprintf(file, "%s;%d-%d-%d;%ld;%d\n", tasks[i].description,
+                dueDateTime->tm_year + 1900, dueDateTime->tm_mon + 1, dueDateTime->tm_mday,
+                tasks[i].completionDate, tasks[i].completed);
+    }
+    fclose(file);
+}
+
+// Function to read tasks from file
+int readTasksFromFile(Task* tasks) {
+    FILE* file = fopen("tasks.txt", "r");
+    if (file == NULL) {
+        return 0; // File does not exist or error opening file
+    }
+
+    int numTasks = 0;
     char line[200];
+
     while (fgets(line, sizeof(line), file)) {
         char description[100];
         int year, month, day;
-        int completed;
         long completionDate;
-        sscanf(line, "%[^;];%d-%d-%d;%d;%ld", description, &year, &month, &day, &completed, &completionDate);
+        int completed;
+        
+        sscanf(line, "%[^;];%d-%d-%d;%ld;%d", description, &year, &month, &day, &completionDate, &completed);
+        
         struct tm dueDateTime = {0};
         dueDateTime.tm_year = year - 1900;
         dueDateTime.tm_mon = month - 1;
         dueDateTime.tm_mday = day;
-        strcpy(tasks[*numTasks].description, description);
-        tasks[*numTasks].dueDate = mktime(&dueDateTime);
-        tasks[*numTasks].completionDate = completionDate;
-        tasks[*numTasks].completed = completed;
-        (*numTasks)++;
+        
+        tasks[numTasks].dueDate = mktime(&dueDateTime);
+        tasks[numTasks].completionDate = (time_t)completionDate;
+        tasks[numTasks].completed = completed;
+        strcpy(tasks[numTasks].description, description);
+        numTasks++;
     }
+    fclose(file);
+    return numTasks;
 }
-
-
-
 
 int main() {
     Task tasks[100];
-    int numTasks = 0;
-    FILE* file = fopen("list.txt", "a+");
-    if (file == NULL) {
-        printf("Could not open file\n");
-        return 1;
-    }
-    loadTasks(tasks, &numTasks, file);
+    int numTasks = readTasksFromFile(tasks);
+
     while (1) {
         printf("To-Do List Menu:\n");
         printf("1. Add Task\n");
@@ -122,29 +145,29 @@ int main() {
         printf("4. Exit\n");
         printf("5. Clear\n");
         printf("Enter choice: ");
+        
         int choice;
         scanf("%d", &choice);
+
         switch (choice) {
             case 1:
-                addTask(tasks, &numTasks, file);
+                addTask(tasks, &numTasks);
                 break;
             case 2:
                 displayTasks(tasks, numTasks);
                 break;
             case 3:
                 displayTasks(tasks, numTasks);
-                completeTask(tasks, numTasks, file);
+                completeTask(tasks, numTasks);
                 break;
             case 4:
-                fclose(file);
                 return 0;
             case 5:
-                printf("\033[H\033[2J");
+                system("clear"); // Use "cls" for Windows
                 break;
             default:
                 printf("Invalid choice\n");
         }
     }
-    fclose(file);
     return 0;
 }
